@@ -1,1 +1,1 @@
-#hello world
+import pygame

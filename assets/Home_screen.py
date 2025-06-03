@@ -1,6 +1,6 @@
 import pygame
 import pygame_gui
-import Sprites_images
+
 
 pygame.init()
 
@@ -8,13 +8,13 @@ def main_menu():
 
     def start():
         #Initialising screen and manager, manages gui elements like Start game, plus sets caption as "Space APP"
-        screen = pygame.display.set_mode(1920, 1080)
-        manager = pygame_gui.UIManager(1920, 1080)
+        screen = pygame.display.set_mode((1920, 1080))
+        manager = pygame_gui.UIManager((1920, 1080))
         pygame.display.set_caption("Space APP")
         
         #load the wallpaper of the main menu and buttons for different options in the menu
         mainmenuwallpaper = pygame.image.load("In_game_wallpaper.png")
-        screen.blit(mainmenuwallpaper)
+        screen.blit(mainmenuwallpaper, (0,0))
         
         Normal_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='Normal', manager=manager))
         Ships_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='Ships', manager=manager))
@@ -53,6 +53,6 @@ def main_menu():
             manager.update(fpscap) 
             manager.draw_ui(screen)
             pygame.display.flip()
-        start()
+    start()
 
 main_menu()

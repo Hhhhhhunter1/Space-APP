@@ -25,11 +25,12 @@ class player(ship):
     def __init__(self, x, y):
         super().__init__(x, y)
 
-    def draw():
+    def draw(self):
         width  = 50  # Or whatever size you want it to be.
         height = 50
         playersprite = pygame.image.load('Untitled.png').convert()
         playersprite = pygame.transform.scale(playersprite, (width, height))
+      
        
     def direction(playersprite):
         mousex, mousey = pygame.mouse.get_pos()

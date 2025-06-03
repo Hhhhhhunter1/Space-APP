@@ -3,6 +3,7 @@ import pygame_gui
 import Sprites_images
 
 
+
 pygame.init()
 
 def main_menu():
@@ -35,18 +36,21 @@ def main_menu():
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == Normal_mode_button:
-                            
-                           
+                            screenrunning = False
+                            run_normal()
                         if event.ui_element == Ships_mode_button:
-                               
+                            screenrunning = False
+                            run_ships()
                         if event.ui_element == Asteroids_mode_button:
-                              
+                            screenrunning = False  
+                            run_asteroids()
                         if event.ui_element == Tutorial_button:
-                            
+                            screenrunning = False
+                            run_tut()
                         if event.ui_element == Exit_game_button:
-                               
-                manager.process_events(event)
+                            pygame.QUIT 
             
+            manager.process_events(event)
             #This part updates our game at the rate of fpscap, draws everthing on screen such as ui elements and shows everything that has been drawn since the last update
             manager.update(fpscap) 
             manager.draw_ui(screen)

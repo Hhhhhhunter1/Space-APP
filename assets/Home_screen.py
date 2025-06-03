@@ -2,8 +2,6 @@ import pygame
 import pygame_gui
 import Sprites_images
 
-
-
 pygame.init()
 
 def main_menu():

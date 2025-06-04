@@ -1,15 +1,34 @@
 import pygame
+import pygame_gui
 import time 
 import math
 
+pygame.init()
+
+#Initialising screen and manager, manages gui elements like Start game, plus sets caption as "Space APP"
+screen = pygame.display.set_mode((1920, 1080))
+manager = pygame_gui.UIManager((1920, 1080))
+clock = pygame.time.Clock()
+fpscap = clock.tick(60) / 1000.0
+
+
+    
+
+
 class Game_object():
-    def __init__(self, velocity=0, x, y):
-        self.Velocity = velocity
+    def __init__(self, x, y):
         self._x = x
         self._y = y
     
     def get_position(self):
         return self._x, self._y
+    
+    def hitbox_area(self, player, enemy):
+        distancex = player[0] - enemy[0]
+        distancey = player[1] - enemy[1]
+        distancesquared = (distancex)**2 + (distancey)**2
+        sumofradiuss = 80
+        return distancesquared <= (sumofradiuss)**2
     
 class ship(Game_object):
     def __init__(self, x, y):
@@ -18,12 +37,7 @@ class ship(Game_object):
     def shoot():
         ewewe
 
-    def hitbox_area(self, player, enemy):
-        distancex = player[0] - enemy[0]
-        distancey = player[1] - enemy[1]
-        distancesquared = (distancex)**2 + (distancey)**2
-        sumofradiuss = 80
-        return distancesquared <= (sumofradiuss)**2
+   
         
       
         
@@ -33,7 +47,7 @@ class player(ship):
         super().__init__(x, y)
         self._width  = 50 
         self._height = 50
-        self._playersprite = pygame.image.load('playership.png')
+        self._playersprite = pygame.image.load('player.png')
         self._playersprite = pygame.transform.scale(self._playersprite, (self._width, self._height))
         self._rotatedplayersprite = self._playersprite
         self._rect = self._playersprite.get_rect(center=(self._x, self._y))
@@ -103,9 +117,13 @@ class asteroid(Game_object):
         super.__init__(x, y)
         self._width = 32
         self._height = 32
-        self._asteroidsprite = pygame.image.load('enemyship.png')
-        self._asteroidsprite = pygame.transform.scale(self._enemysprite, (self._width, self._height))
-        self._rect = self._enemysprite.get_rect(center=(self._x, self._y))
+        self._asteroidsprite = pygame.image.load('asteroid.png')
+        self._asteroidsprite = pygame.transform.scale(self._asteroidsprite, (self._width, self._height))
+        self._rect = self._asteroidsprite.get_rect(center=(self._x, self._y))
+
+    
+
+    
 
         
         

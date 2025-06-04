@@ -1,31 +1,27 @@
 import pygame
 import pygame_gui
+import sys
+from main import run_normal
+from game_objects import screen, manager, fpscap
 
-
-pygame.init()
 
 def main_menu():
 
     def start():
-        #Initialising screen and manager, manages gui elements like Start game, plus sets caption as "Space APP"
-        screen = pygame.display.set_mode((1920, 1080))
-        manager = pygame_gui.UIManager((1920, 1080))
-        pygame.display.set_caption("Space APP")
         
         #load the wallpaper of the main menu and buttons for different options in the menu
         mainmenuwallpaper = pygame.image.load("In_game_wallpaper.png")
+        mainmenuwallpaper = pygame.transform.scale(mainmenuwallpaper, (1920, 1080))
         screen.blit(mainmenuwallpaper, (0,0))
         
-        Normal_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='Normal', manager=manager))
-        Ships_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='Ships', manager=manager))
-        Asteroids_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='Asteroids', manager=manager))
-        Tutorial_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='How to play', manager=manager))
-        Exit_game_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 60)), text='Quit game', manager=manager))
-        clock = pygame.time.Clock()
+        Normal_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((250, 350), (100, 60)), text='Normal', manager=manager))
+        Ships_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((250, 450), (100, 60)), text='Ships', manager=manager))
+        Asteroids_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((250, 550), (100, 60)), text='Asteroids', manager=manager))
+        Tutorial_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((250, 650), (100, 60)), text='How to play', manager=manager))
+        Exit_game_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((250, 750), (100, 60)), text='Quit game', manager=manager))
         screenrunning = True
         while screenrunning:
-            #Set the maximum fps as 60
-            fpscap = clock.tick(60) / 1000.0
+            
             #Retrieves all events that have happened since the last time this function was called
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -46,7 +42,9 @@ def main_menu():
                             screenrunning = False
                             run_tut()
                         if event.ui_element == Exit_game_button:
-                            pygame.QUIT 
+                            screenrunning = False
+                            pygame.quit()
+                            sys.exit()
             
             manager.process_events(event)
             #This part updates our game at the rate of fpscap, draws everthing on screen such as ui elements and shows everything that has been drawn since the last update

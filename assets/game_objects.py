@@ -5,20 +5,22 @@ import math
 
 pygame.init()
 
-#Initialising screen and manager, manages gui elements like Start game, plus sets caption as "Space APP"
+#Initialising screen and manager, manages gui elements 
 screen = pygame.display.set_mode((1920, 1080))
 manager = pygame_gui.UIManager((1920, 1080))
 clock = pygame.time.Clock()
 fpscap = clock.tick(60) / 1000.0
+clock = pygame.time.Clock()
 
 
     
 
 
 class Game_object():
-    def __init__(self, x, y):
+    def __init__(self, x, y, health):
         self._x = x
         self._y = y
+        self._health = health
     
     def get_position(self):
         return self._x, self._y
@@ -30,21 +32,56 @@ class Game_object():
         sumofradiuss = 80
         return distancesquared <= (sumofradiuss)**2
     
+    def hurt(self):
+        self._health -= 1
+
+    def die(self):
+        if self._health <= 0:
+            return True
+    
 class ship(Game_object):
-    def __init__(self, x, y):
-        super().__init__(x, y)
-
-    def shoot():
-        ewewe
-
    
-        
+   
+    
+    def __init__(self, x, y, health):
+        super().__init__(x, y, health)
+        self._bullets = []
+        self._bullet_speed = 7
+        self._cooldown = 5
       
         
+    def shoot(self, keys):
+        mousex, mousey = pygame.mouse.get_pos()
+        ptoxVector, ptoyVector = mousex - self._x, mousey - self._y
+        angle = math.atan2(ptoyVector, ptoxVector)
+        if keys[pygame.K_SPACE]:
+            if self._cooldown <= 0:
+                offset = 40  
+                bullet_x = self._x + math.cos(angle) * offset
+                bullet_y = self._y + math.sin(angle) * offset
+                bullet = {'pos': [bullet_x, bullet_y], 'angle': angle}
+                self._bullets.append(bullet)
+                self._cooldown = 15
+            if self._cooldown > 0:
+                self._cooldown -= 1
+
+    def draw_bullets(self):
+        for bullet in self._bullets[:]:
+            bullet['pos'][0] += math.cos(bullet['angle']) * self._bullet_speed
+            bullet['pos'][1] += math.sin(bullet['angle']) * self._bullet_speed
     
+            if (bullet['pos'][0] < 0 or bullet['pos'][0] > 1920 or
+                bullet['pos'][1] < 0 or bullet['pos'][1] > 1080):
+                self._bullets.remove(bullet)
+            else:
+                pygame.draw.circle(screen, (255, 255, 255), (int(bullet['pos'][0]), int(bullet['pos'][1])), 5)
+
+       
+   
+        
 class player(ship):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, health):
+        super().__init__(x, y, health)
         self._width  = 50 
         self._height = 50
         self._playersprite = pygame.image.load('player.png')
@@ -71,7 +108,7 @@ class player(ship):
         delta_time = currentT - self._last_time
         self._last_time = currentT
 
-        stiffnessconstant = 4
+        stiffnessconstant = 2
         interpolation_factor = stiffnessconstant * delta_time
 
         if interpolation_factor > 1:
@@ -87,18 +124,19 @@ class player(ship):
         self._x, self._y = self.lerp_velocity()
 
 class enemy(ship):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, health):
+        super().__init__(x, y, health)
         self._width = 32
         self._height = 32
         self._enemysprite = pygame.image.load('enemyship.png')
         self._enemysprite = pygame.transform.scale(self._enemysprite, (self._width, self._height))
         self._rect = self._enemysprite.get_rect(center=(self._x, self._y))
+        self._dead = False
 
     
     def chase(self, target: ship):
         tx, ty = target.get_position()
-        speed = 2 
+        speed = 1
         if self._x < tx:
             self._x += min(speed, tx - self._x)
         elif self._x > tx:
@@ -108,18 +146,20 @@ class enemy(ship):
         elif self._y > ty:
             self._y -= min(speed, self._y - ty)
 
+        self._rect.center = (int(self._x), int(self._y))
     def draw(self):
         screen.blit(self._enemysprite, self._rect)
 
         
 class asteroid(Game_object):
-    def __init__(self, x, y):
-        super.__init__(x, y)
+    def __init__(self, x, y, health):
+        super.__init__(x, y, health)
         self._width = 32
         self._height = 32
         self._asteroidsprite = pygame.image.load('asteroid.png')
         self._asteroidsprite = pygame.transform.scale(self._asteroidsprite, (self._width, self._height))
         self._rect = self._asteroidsprite.get_rect(center=(self._x, self._y))
+        
 
     
 

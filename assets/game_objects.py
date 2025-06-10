@@ -2,6 +2,15 @@ import pygame
 import pygame_gui
 import time 
 import math
+import ctypes
+import ctypes
+
+#fixes OS scaling bug that windows does automatically making the game zoom in, makes pygame "dpi aware"
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(1) 
+except AttributeError:
+   
+    pass
 
 pygame.init()
 

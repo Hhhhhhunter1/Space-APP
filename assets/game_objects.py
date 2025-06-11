@@ -2,7 +2,7 @@ import pygame
 import pygame_gui
 import time 
 import math
-import ctypes
+import random
 import ctypes
 
 #fixes OS scaling bug that windows does automatically making the game zoom in, makes pygame "dpi aware"
@@ -117,7 +117,7 @@ class player(ship):
         delta_time = currentT - self._last_time
         self._last_time = currentT
 
-        stiffnessconstant = 2
+        stiffnessconstant = 1.5
         interpolation_factor = stiffnessconstant * delta_time
 
         if interpolation_factor > 1:
@@ -141,19 +141,19 @@ class enemy(ship):
         self._enemysprite = pygame.transform.scale(self._enemysprite, (self._width, self._height))
         self._rect = self._enemysprite.get_rect(center=(self._x, self._y))
         self._dead = False
+        self._speed = random.randint(1, 2)
 
     
     def chase(self, target: ship):
         tx, ty = target.get_position()
-        speed = 1
         if self._x < tx:
-            self._x += min(speed, tx - self._x)
+            self._x += min(self._speed, tx - self._x)
         elif self._x > tx:
-            self._x -= min(speed, self._x - tx)
+            self._x -= min(self._speed, self._x - tx)
         if self._y < ty:
-            self._y += min(speed, ty - self._y)
+            self._y += min(self._speed, ty - self._y)
         elif self._y > ty:
-            self._y -= min(speed, self._y - ty)
+            self._y -= min(self._speed, self._y - ty)
 
         self._rect.center = (int(self._x), int(self._y))
     def draw(self):
@@ -163,14 +163,20 @@ class enemy(ship):
 class asteroid(Game_object):
     def __init__(self, x, y, health):
         super.__init__(x, y, health)
-        self._width = 32
-        self._height = 32
+        self._width = 50
+        self._height = 50
         self._asteroidsprite = pygame.image.load('asteroid.png')
         self._asteroidsprite = pygame.transform.scale(self._asteroidsprite, (self._width, self._height))
         self._rect = self._asteroidsprite.get_rect(center=(self._x, self._y))
-        
-
+        self._dead = False
     
+   
+    def astmove(self):
+        startxy = random.randint(-30, 0), random.randint(0, 1080)
+        targetxy = random.randint(1981, 2000), random.randint(0, 1080)
+
+    def draw(self):
+        screen.blit(self._asteroidsprite, self._rect)
 
     
 

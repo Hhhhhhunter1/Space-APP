@@ -14,9 +14,11 @@ def run_normal():
     score_timer = 0
     Player = player(960, 540, 1)
     font = pygame.font.SysFont(None, 48)
-    #enemy spawning
-    enemies = 10
+    #enemy spawning variables
+    enemies = 5
     aliveenemies = []
+    newenemies = True
+    newEscore = 30
     #pause screen variables
     paused = False
     resume_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((840, 350), (100, 60)), text='Resume', manager=manager))
@@ -24,12 +26,16 @@ def run_normal():
     gamewallpaper = pygame.image.load("gamewallpaper.png")
     gamewallpaper = pygame.transform.scale(gamewallpaper, (1920, 1080))
 
-    for _ in range(enemies):
+    #random spawn of enemies off screen
+    def setenemies():
+        for _ in range(enemies):
             randoffscreenx = random.randint(0, 1920)
             randoffscreeny = random.randint(1, 100)
             randoffscreeny = randoffscreeny * -1
             newenemy = enemy(randoffscreenx, randoffscreeny, 1)
             aliveenemies.append(newenemy)
+    
+    setenemies()
 
     running = True
     while running:
@@ -37,7 +43,7 @@ def run_normal():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
-        #random spawn of enemies off screen
+        
         
 
         #pausescreen
@@ -97,7 +103,8 @@ def run_normal():
         display_score = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(display_score, (1700, 20))
         
-       
+        
+
         if not paused: 
 
             score_timer += fpscap
@@ -105,9 +112,7 @@ def run_normal():
             if score_timer >= 1.0:
                 score += 1
                 score_timer -= 1
-
-            
-
+      
             Player.direction()
             Player.update_player_pos()
             Player.shoot(keys)
@@ -118,8 +123,15 @@ def run_normal():
                 e.chase(Player)
                 e.draw()
                 
-        
-
+            if score < newEscore:
+                newenemies = True
+            
+            
+            while score >= newEscore and newenemies:
+                enemies += 2
+                setenemies()
+                newenemies = False
+                newEscore += 20
         
         manager.update(fpscap)
         manager.draw_ui(screen)

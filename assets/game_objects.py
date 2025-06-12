@@ -162,18 +162,35 @@ class enemy(ship):
         
 class asteroid(Game_object):
     def __init__(self, x, y, health):
-        super.__init__(x, y, health)
+        super().__init__(x, y, health) 
+        self._x = x
+        self._y = y
         self._width = 50
         self._height = 50
         self._asteroidsprite = pygame.image.load('asteroid.png')
         self._asteroidsprite = pygame.transform.scale(self._asteroidsprite, (self._width, self._height))
         self._rect = self._asteroidsprite.get_rect(center=(self._x, self._y))
         self._dead = False
+        self._targetx = random.randint(1981, 2000)
+        self._targety = random.randint(0, 1080)
     
    
     def astmove(self):
-        startxy = random.randint(-30, 0), random.randint(0, 1080)
-        targetxy = random.randint(1981, 2000), random.randint(0, 1080)
+        speed = 1
+        
+        starttoendVectorx = self._targetx - self._x
+        starttoendVectory = self._targety - self._y
+        length = math.hypot(starttoendVectorx, starttoendVectory) 
+        if length < 1:
+            return
+        starttoendVectorx /= length
+        starttoendVectory /= length
+        velocityx = starttoendVectorx * speed
+        velocityy = starttoendVectory * speed
+        self._x += velocityx
+        self._y += velocityy
+        self._rect.center = (int(self._x), int(self._y))
+
 
     def draw(self):
         screen.blit(self._asteroidsprite, self._rect)

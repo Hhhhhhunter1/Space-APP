@@ -3,7 +3,7 @@ import sys
 import random
 import pygame_gui
 import time
-from game_objects import player, enemy, ship, screen, manager, fpscap, clock
+from game_objects import player, enemy, ship, asteroid, screen, manager, fpscap, clock
 
 
 
@@ -19,6 +19,10 @@ def run_normal():
     aliveenemies = []
     newenemies = True
     newEscore = 30
+    #asteroid spawning variables
+    asteroids = 4
+    currentasteroids = []
+    newasteroids = True
     #pause screen variables
     paused = False
     resume_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((840, 350), (100, 60)), text='Resume', manager=manager))
@@ -37,14 +41,22 @@ def run_normal():
     
     setenemies()
 
+    #random spawn of asteroids off screen
+    def setasteroids():
+        for _ in range(asteroids):
+            startx = random.randint(-30, 0)
+            starty = random.randint(0, 1080)
+            startx = startx * -1
+            newasteroid = asteroid(startx, starty, 3)
+            currentasteroids.append(newasteroid)
+
+    setasteroids()    
+
     running = True
     while running:
         
         clock.tick(60)
         keys = pygame.key.get_pressed()
-
-        
-        
 
         #pausescreen
         for event in pygame.event.get():
@@ -72,39 +84,79 @@ def run_normal():
             quit_button.hide()
 
         player_rect = pygame.Rect(Player.get_position(), (Player._width, Player._height))
+
+        #calculate collisions between bullets, enemies and asteroids
         for bullet in Player._bullets[:]:
             bullet_rect = pygame.Rect(bullet['pos'][0], bullet['pos'][1], 10, 10)
            
             for e in aliveenemies[:]:
-                enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))
+                for a in currentasteroids[:]:
+              
+                    enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))
+                    asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))
 
-                if bullet_rect.colliderect(enemy_rect):
-                    Player._bullets.remove(bullet)  
-                    e.hurt()
+                    if bullet_rect.colliderect(enemy_rect):
+                        Player._bullets.remove(bullet)  
+                        e.hurt()
                     if e.die() == True:
                         aliveenemies.remove(e) 
                         score += 3
+                        break
+
+            for a in currentasteroids[:]:
+                asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))
+
+                if bullet_rect.colliderect(asteroid_rect):
+                    Player._bullets.remove(bullet)  
+                    a.hurt()
+                    if a.die() == True:
+                        currentasteroids.remove(a) 
+                        score += 3
                     break
 
+        for e in aliveenemies[:]:
+                for a in currentasteroids[:]:
+                   
+                    enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))
+                    asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))
+
+                    if asteroid_rect.colliderect(enemy_rect):
+                        e.hurt()
+                    if e.die() == True:
+                        aliveenemies.remove(e) 
+                        break
+                    
+                    
+                        
+                      
+
+
+        #makes the player die if they collide with enemies or asteroids
         for e in aliveenemies:
             enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))    
             if enemy_rect.colliderect(player_rect):
                 running = False
                 break
+
+        for a in currentasteroids:
+            asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))    
+            if asteroid_rect.colliderect(player_rect):
+                running = False
+                break
+        
         
         screen.blit(gamewallpaper, (0,0))
         
+        #pause screen
         if paused:
             pause = font.render("Game Paused", True, (255, 255, 255))
             screen.blit(pause, (890, 200))
-                
-        
-        
+                 
         display_score = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(display_score, (1700, 20))
         
         
-
+        #setting up game
         if not paused: 
 
             score_timer += fpscap
@@ -122,14 +174,20 @@ def run_normal():
             for e in aliveenemies:
                 e.chase(Player)
                 e.draw()
+
+            for a in currentasteroids:
+                a.astmove()
+                a.draw()
                 
             if score < newEscore:
                 newenemies = True
             
             
-            while score >= newEscore and newenemies:
+            while score >= newEscore and newenemies and newasteroids:
                 enemies += 2
+                asteroids += 1
                 setenemies()
+                setasteroids()
                 newenemies = False
                 newEscore += 20
         

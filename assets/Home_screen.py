@@ -24,15 +24,12 @@ def main_menu():
         
         screenrunning = True
         while screenrunning:
-            
+                    
             #Retrieves all events that have happened since the last time this function was called
             for event in pygame.event.get():                      
                 if event.type == pygame.QUIT:
                     screenrunning = False
-
-                
-                   
-
+  
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
 

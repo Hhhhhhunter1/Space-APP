@@ -165,16 +165,38 @@ class asteroid(Game_object):
         super().__init__(x, y, health) 
         self._x = x
         self._y = y
-        self._width = 50
-        self._height = 50
+        whdecider = random.randint(1, 3)
+        if whdecider == 1:
+            rW = 50
+            rH = 50
+        elif whdecider == 2:
+            rW = 32
+            rH = 32
+        else:
+            rW = 80
+            rH = 80
+        self._width = rW
+        self._height = rH
         self._asteroidsprite = pygame.image.load('asteroid.png')
         self._asteroidsprite = pygame.transform.scale(self._asteroidsprite, (self._width, self._height))
         self._rect = self._asteroidsprite.get_rect(center=(self._x, self._y))
         self._dead = False
-        self._targetx = random.randint(1981, 2000)
-        self._targety = random.randint(0, 1080)
+        tx1 = random.randint(1981, 2000)
+        ty1 = random.randint(0, 1080)
+        tx2 = random.randint(0, 30)
+        ty2 = random.randint(0, 1080)
+        decider = 1
+        if self._x <= 40:
+            decider = 2
+       
+        if decider == 2:
+            self._targetx = tx1
+            self._targety = ty1
+        else:
+            self._targetx = tx2
+            self._targety = ty2
     
-   
+
     def astmove(self):
         speed = 1
         
@@ -189,8 +211,8 @@ class asteroid(Game_object):
         velocityy = starttoendVectory * speed
         self._x += velocityx
         self._y += velocityy
-        self._rect.center = (int(self._x), int(self._y))
 
+        self._rect.center = (int(self._x), int(self._y))
 
     def draw(self):
         screen.blit(self._asteroidsprite, self._rect)

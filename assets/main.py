@@ -10,8 +10,7 @@ from game_objects import player, enemy, asteroid, screen, manager, fpscap, clock
 def main():
     manager.clear_and_reset()
     main_menu()
-    
-    
+
 # homescreen
                 
 def main_menu():
@@ -22,19 +21,33 @@ def main_menu():
         mainmenuwallpaper = pygame.image.load("pixil-frame-0.png")
         mainmenuwallpaper = pygame.transform.scale(mainmenuwallpaper, (1920, 1080))
         screen.blit(mainmenuwallpaper, (0,0))
-        
-        
+
+        tutwallpaper = pygame.image.load("gamewallpaper.png")
+        tutwallpaper = pygame.transform.scale(tutwallpaper, (1920, 1080))
+        tutplayersprite = pygame.image.load("player.png")
+        tutplayersprite = pygame.transform.scale(tutplayersprite, (150, 150))
+        tutenemysprite = pygame.image.load("enemyship.png")
+        tutenemysprite = pygame.transform.scale(tutenemysprite, (150, 150))
+        tutasteroidsprite = pygame.image.load("asteroid.png")
+        tutasteroidsprite = pygame.transform.scale(tutasteroidsprite, (175, 175))
+        font = pygame.font.SysFont(None, 30)
+       
+        playerdetails = font.render("This is your ship. It follows your cursor and fires it's guns \nwhen you press the space button.", True, (255, 255, 255))
+        enemydetails = font.render("This is an enemy ship, try to shoot it before it flies into you. \nThat will reward with you three points.", True, (255, 255, 255))
+        asteroiddetails = font.render("This is an asteroid, they can be destroyed with three shots \nand give you five points when they are destroyed. \nTry not to fly into them.", True, (255, 255, 255))
        
         
         Normal_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 450), (400, 60)), text='Normal', manager=manager))
         Ships_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 550), (400, 60)), text='Ships', manager=manager))
         Asteroids_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 650), (400, 60)), text='Asteroids', manager=manager))
         Tutorial_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 750), (400, 60)), text='How to play', manager=manager))
-        Exit_game_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 850), (400, 60)), text='Quit game', manager=manager))
+        # exit to main menu from tutorial button
         
+        Exit_game_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 850), (400, 60)), text='Quit game', manager=manager))
         all_menu_buttons = [ Normal_mode_button, Ships_mode_button, Asteroids_mode_button, Tutorial_button, Exit_game_button]
         
         screenrunning = True
+        intutorial = False
         while screenrunning:
                     
             #Retrieves all events that have happened since the last time this function was called
@@ -48,28 +61,44 @@ def main_menu():
                         def hide_menu_buttons():
                             for button in all_menu_buttons:
                                 button.hide()
-                       
 
                         if event.ui_element == Normal_mode_button:
                             screenrunning = False
                             hide_menu_buttons()            
-                            normal = setter(5, 4)
+                            normal = setter(2, 4)
                             normal.rungame()
                             
                         elif event.ui_element == Ships_mode_button:
                             screenrunning = False
                             hide_menu_buttons()   
-                            ships = setter(8, 0)
+                            ships = setter(4, 0)
                             ships.rungame()
                         elif event.ui_element == Asteroids_mode_button:
                             screenrunning = False  
                             hide_menu_buttons()
-                            asteroids = setter(0, 15)
+                            asteroids = setter(0, 16)
                             asteroids.rungame()
-                        elif event.ui_element == Tutorial_button:
-                            screenrunning = False
+                        elif event.ui_element == Tutorial_button and not intutorial:
                             hide_menu_buttons()
-                            run_tut()
+                            manager.clear_and_reset() 
+                            Exit_tutorial_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 750), (400, 60)), text='Exit to main menu', manager=manager))
+                            Exit_tutorial_button.show()
+                            screen.blit(tutwallpaper, (0,0))
+                            intutorial = True
+
+                            screen.blit(tutplayersprite, (700, 150)) 
+                            screen.blit(tutenemysprite, (700, 275))
+                            screen.blit(tutasteroidsprite, (700, 450))
+                            
+                            screen.blit(playerdetails, (900, 200))
+                            screen.blit(enemydetails, (900, 325))
+                            screen.blit(asteroiddetails, (900, 500))
+
+                        
+                        elif event.ui_element == Exit_tutorial_button and intutorial:
+                                intutorial = False
+                                main()
+
                         elif event.ui_element == Exit_game_button:
                             screenrunning = False
                             pygame.quit()
@@ -99,7 +128,7 @@ class setter():
         self._enemies = a
         self._aliveenemies = []
         self._newenemies = True
-        self._newEscore = 30
+        self._newEscore = 10
         #asteroid spawning variables
         self._asteroids = b
         self._currentasteroids = []
@@ -185,7 +214,7 @@ class setter():
                 self._quit_button.hide()
                 self._backtomenu_button.hide()
 
-            player_rect = pygame.Rect(self._Player.get_position(), (self._Player._width, self._Player._height))
+           
             bulletstoremove = []
             pdead = False   # whether player is dead or alive 
             gameover = False
@@ -196,13 +225,10 @@ class setter():
                 bulletcollision = False
                 for e in self._aliveenemies[:]:
               
-                        enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))
-                        
-
-                        if bullet_rect.colliderect(enemy_rect):
+                        if bullet_rect.colliderect(e._rect):
                             bulletstoremove.append(bullet) 
                             e.hurt()
-                        if e.die() == True:
+                        if e.die():
                             self._aliveenemies.remove(e) 
                             self._score += 3
                             bulletcollision = True
@@ -212,9 +238,9 @@ class setter():
                     continue
 
                 for a in self._currentasteroids[:]:
-                    asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))
+                    
 
-                    if bullet_rect.colliderect(asteroid_rect):
+                    if bullet_rect.colliderect(a._rect):
                         bulletstoremove.append(bullet) 
                         a.hurt()
                         if a.die() == True:
@@ -230,10 +256,9 @@ class setter():
             for e in self._aliveenemies[:]:
                     for a in self._currentasteroids[:]:
                    
-                        enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))
-                        asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))
+                        
 
-                        if asteroid_rect.colliderect(enemy_rect):
+                        if a._rect.colliderect(e._rect):
                             e.hurt()
                         if e.die() == True:
                             self._aliveenemies.remove(e) 
@@ -242,14 +267,14 @@ class setter():
 
             #makes the player die if they collide with enemies or asteroids
             for e in self._aliveenemies:
-                enemy_rect = pygame.Rect(e.get_position(), (e._width, e._height))    
-                if enemy_rect.colliderect(player_rect):
+                  
+                if e._rect.colliderect(self._Player._rect):
                     pdead = True
                     break
 
             for a in self._currentasteroids:
-                asteroid_rect = pygame.Rect(a.get_position(), (a._width, a._height))    
-                if asteroid_rect.colliderect(player_rect):
+                  
+                if a._rect.colliderect(self._Player._rect):
                     pdead = True
                     break
         

@@ -34,13 +34,6 @@ class Game_object():
     def get_position(self):
         return self._x, self._y
     
-    def hitbox_area(self, player, enemy):
-        distancex = player[0] - enemy[0]
-        distancey = player[1] - enemy[1]
-        distancesquared = (distancex)**2 + (distancey)**2
-        sumofradiuss = 80
-        return distancesquared <= (sumofradiuss)**2
-    
     def hurt(self):
         self._health -= 1
 
@@ -91,8 +84,8 @@ class ship(Game_object):
 class player(ship):
     def __init__(self, x, y, health):
         super().__init__(x, y, health)
-        self._width  = 50 
-        self._height = 50
+        self._width  = 17
+        self._height = 17
         self._playersprite = pygame.image.load('player.png')
         self._playersprite = pygame.transform.scale(self._playersprite, (self._width, self._height))
         self._rotatedplayersprite = self._playersprite
@@ -131,29 +124,31 @@ class player(ship):
     def update_player_pos(self):
         #update x and y coordinates
         self._x, self._y = self.lerp_velocity()
+        self._rect.center = (int(self._x), int(self._y))
 
 class enemy(ship):
     def __init__(self, x, y, health):
         super().__init__(x, y, health)
-        self._width = 32
-        self._height = 32
+        self._width = 18
+        self._height = 18
         self._enemysprite = pygame.image.load('enemyship.png')
         self._enemysprite = pygame.transform.scale(self._enemysprite, (self._width, self._height))
         self._rect = self._enemysprite.get_rect(center=(self._x, self._y))
         self._dead = False
-        self._speed = random.randint(1, 2)
+        self._speed = random.randint(1, 3)
 
     
     def chase(self, target: ship):
         tx, ty = target.get_position()
-        if self._x < tx:
-            self._x += min(self._speed, tx - self._x)
-        elif self._x > tx:
-            self._x -= min(self._speed, self._x - tx)
-        if self._y < ty:
-            self._y += min(self._speed, ty - self._y)
-        elif self._y > ty:
-            self._y -= min(self._speed, self._y - ty)
+        
+        distancex = tx - self._x
+        distancey = ty - self._y
+        distance = math.hypot(distancex, distancey)
+        if distance != 0:
+            self._x += self._speed * distancex / distance
+            self._y += self._speed * distancey / distance
+
+       
 
         self._rect.center = (int(self._x), int(self._y))
     def draw(self):
@@ -183,7 +178,8 @@ class asteroid(Game_object):
         self._dead = False
         tx1 = random.randint(1981, 2000)
         ty1 = random.randint(0, 1080)
-        tx2 = random.randint(0, 30)
+        tx2 = random.randint(50, 100)
+        tx2 = tx2 * -1
         ty2 = random.randint(0, 1080)
         decider = 1
         if self._x <= 40:
@@ -203,6 +199,8 @@ class asteroid(Game_object):
         starttoendVectorx = self._targetx - self._x
         starttoendVectory = self._targety - self._y
         length = math.hypot(starttoendVectorx, starttoendVectory) 
+        if length < 0:
+            length = length * -1
         if length < 1:
             return
         starttoendVectorx /= length

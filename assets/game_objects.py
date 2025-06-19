@@ -19,7 +19,7 @@ screen = pygame.display.set_mode((1920, 1080))
 manager = pygame_gui.UIManager((1920, 1080))
 clock = pygame.time.Clock()
 fpscap = clock.tick(60) / 1000.0
-clock = pygame.time.Clock()
+
 
 
     
@@ -42,8 +42,6 @@ class Game_object():
             return True
     
 class ship(Game_object):
-   
-   
     
     def __init__(self, x, y, health):
         super().__init__(x, y, health)
@@ -58,14 +56,14 @@ class ship(Game_object):
         angle = math.atan2(ptoyVector, ptoxVector)
         if keys[pygame.K_SPACE]:
             if self._cooldown <= 0:
-                offset = 40  
+                offset = 14
                 bullet_x = self._x + math.cos(angle) * offset
                 bullet_y = self._y + math.sin(angle) * offset
                 bullet = {'pos': [bullet_x, bullet_y], 'angle': angle}
                 self._bullets.append(bullet)
                 self._cooldown = 15
-            if self._cooldown > 0:
-                self._cooldown -= 1
+        if self._cooldown > 0:
+            self._cooldown -= 1
 
     def draw_bullets(self):
         for bullet in self._bullets[:]:
@@ -110,11 +108,11 @@ class player(ship):
         delta_time = currentT - self._last_time
         self._last_time = currentT
 
-        stiffnessconstant = 1.5
+        stiffnessconstant = 0.6
         interpolation_factor = stiffnessconstant * delta_time
 
-        if interpolation_factor > 1:
-            interpolation_factor = 1
+        if interpolation_factor > 1.4:
+            interpolation_factor = 1.4
         #Get current mouse position than use it in the formula shown in the project folio in project description, player logic
         M_xold, M_yold = pygame.mouse.get_pos()
         Pxnew = self._x + (interpolation_factor * (M_xold - self._x))
@@ -129,8 +127,8 @@ class player(ship):
 class enemy(ship):
     def __init__(self, x, y, health):
         super().__init__(x, y, health)
-        self._width = 18
-        self._height = 18
+        self._width = 30
+        self._height = 26
         self._enemysprite = pygame.image.load('enemyship.png')
         self._enemysprite = pygame.transform.scale(self._enemysprite, (self._width, self._height))
         self._rect = self._enemysprite.get_rect(center=(self._x, self._y))
@@ -181,11 +179,19 @@ class asteroid(Game_object):
         tx2 = random.randint(50, 100)
         tx2 = tx2 * -1
         ty2 = random.randint(0, 1080)
+        tx3 = random.randint(0, 2070)
+        ty3 = random.randint(90, 100)
+        ty3 = ty3 * -1
         decider = 1
-        if self._x <= 40:
+        if self._x <= 30:
             decider = 2
+        elif self._x >= 0 and self._x <= 1980:
+            decider = 3
        
-        if decider == 2:
+        if decider == 3:
+            self._targetx = tx3
+            self._targety = ty3
+        elif decider == 2:
             self._targetx = tx1
             self._targety = ty1
         else:
@@ -194,7 +200,7 @@ class asteroid(Game_object):
     
 
     def astmove(self):
-        speed = 1
+        speed = random.randint(1,2)
         
         starttoendVectorx = self._targetx - self._x
         starttoendVectory = self._targety - self._y

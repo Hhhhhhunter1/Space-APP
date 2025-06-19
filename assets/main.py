@@ -21,6 +21,8 @@ def main_menu():
         mainmenuwallpaper = pygame.image.load("pixil-frame-0.png")
         mainmenuwallpaper = pygame.transform.scale(mainmenuwallpaper, (1920, 1080))
         screen.blit(mainmenuwallpaper, (0,0))
+        
+        #Variables for tutorial screen
 
         tutwallpaper = pygame.image.load("gamewallpaper.png")
         tutwallpaper = pygame.transform.scale(tutwallpaper, (1920, 1080))
@@ -33,7 +35,7 @@ def main_menu():
         font = pygame.font.SysFont(None, 30)
        
         playerdetails = font.render("This is your ship. It follows your cursor and fires it's guns \nwhen you press the space button.", True, (255, 255, 255))
-        enemydetails = font.render("This is an enemy ship, try to shoot it before it flies into you. \nThat will reward with you three points.", True, (255, 255, 255))
+        enemydetails = font.render("This is an enemy ship, shoot it before it flies into you. \nThat will reward with you three points.", True, (255, 255, 255))
         asteroiddetails = font.render("This is an asteroid, they can be destroyed with three shots \nand give you five points when they are destroyed. \nTry not to fly into them.", True, (255, 255, 255))
        
         
@@ -42,8 +44,8 @@ def main_menu():
         Asteroids_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 650), (400, 60)), text='Asteroids', manager=manager))
         Tutorial_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 750), (400, 60)), text='How to play', manager=manager))
         # exit to main menu from tutorial button
-        
         Exit_game_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 850), (400, 60)), text='Quit game', manager=manager))
+        
         all_menu_buttons = [ Normal_mode_button, Ships_mode_button, Asteroids_mode_button, Tutorial_button, Exit_game_button]
         
         screenrunning = True
@@ -86,11 +88,11 @@ def main_menu():
                             screen.blit(tutwallpaper, (0,0))
                             intutorial = True
 
-                            screen.blit(tutplayersprite, (700, 150)) 
-                            screen.blit(tutenemysprite, (700, 275))
+                            screen.blit(tutplayersprite, (700, 100)) 
+                            screen.blit(tutenemysprite, (700, 265))
                             screen.blit(tutasteroidsprite, (700, 450))
                             
-                            screen.blit(playerdetails, (900, 200))
+                            screen.blit(playerdetails, (900, 155))
                             screen.blit(enemydetails, (900, 325))
                             screen.blit(asteroiddetails, (900, 500))
 
@@ -121,6 +123,7 @@ def main_menu():
 class setter():
     def __init__(self, a, b): 
         self._score = 0
+        self._timecounter = 0
         self._score_timer = 0
         self._Player = player(960, 540, 1)
         self._font = pygame.font.SysFont(None, 48)
@@ -133,6 +136,7 @@ class setter():
         self._asteroids = b
         self._currentasteroids = []
         self._newasteroids = True
+        self._newAscore = 2
         #pause screen variables
         self._paused = False
         self._resume_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((890, 350), (100, 60)), text='Resume', manager=manager))
@@ -149,9 +153,19 @@ class setter():
     #random spawn of enemies off screen
     def _setenemies(self):
             for _ in range(self._enemies):
-                randoffscreenx = random.randint(0, 1920)
-                randoffscreeny = random.randint(1, 100)
-                randoffscreeny = randoffscreeny * -1
+                decider = random.randint(1, 4)
+                randoffscreenx = random.randint(0, 1980)
+                randoffscreeny = random.randint(0, 1080)
+                if decider == 1:
+                    randoffscreeny = random.randint(1, 100)
+                    randoffscreeny = randoffscreeny * -1
+                elif decider == 2:
+                    randoffscreeny = random.randint(1110, 1130) 
+                elif decider == 3:
+                    randoffscreenx = random.randint(20, 30)
+                    randoffscreenx = randoffscreenx * 1
+                elif decider == 4:
+                    randoffscreenx = random.randint(2010, 2025)
                 newenemy = enemy(randoffscreenx, randoffscreeny, 1)
                 self._aliveenemies.append(newenemy)
         
@@ -160,15 +174,20 @@ class setter():
         #random spawn of asteroids off screen
     def _setasteroids(self):
             for _ in range(self._asteroids):
-        
-                decider = random.randint(1,2)
-                if decider == 2:
+                
+                starty = random.randint(0, 1080)
+
+                decider = random.randint(1,3)
+                if decider == 3:
+                    startx = random.randint(0, 1980)
+                    starty = random.randint(1175, 1210)
+                elif decider == 2:
                     startx = random.randint(0, 30)
                     startx = startx * -1
                 else:
                     startx = random.randint(1981, 2000)
                 
-                starty = random.randint(0, 1080)
+                
                 newasteroid = asteroid(startx, starty, 3)
                 self._currentasteroids.append(newasteroid)
 
@@ -302,6 +321,7 @@ class setter():
 
                     if  self._score_timer >= 1.0:
                         self._score += 1
+                        self._timecounter += 1
                         self._score_timer -= 1
         
                     self._Player.direction()
@@ -318,18 +338,34 @@ class setter():
                         a.astmove()
                         a.draw()
                     
-                    if self._score < self._newEscore:
+                    if self._timecounter < self._newEscore:
                         self._newenemies = True
+
+                    if self._timecounter < self._newAscore:
+                        self._newasteroids = True
                 
-                    while self._score >= self._newEscore and self._newenemies and self._newasteroids:
-                        if self._enemies > 0:
+                    while self._timecounter == self._newEscore and self._newenemies:
+                        edecision = random.randint(1,3)
+                        if self._enemies > 0 and edecision == 1:
                             self._enemies += 2
-                        if self._asteroids > 0:
-                            self._asteroids += 1
                         self._setenemies()
-                        self._setasteroids()
                         self._newenemies = False
-                        self._newEscore += 20
+                        self._newEscore += 3
+                        
+
+                    while self._timecounter == self._newAscore and self._newasteroids:
+                        adecision = random.randint(1,2)
+                        if self._asteroids > 0 and adecision == 1:
+                            self._asteroids += 1
+                        self._setasteroids()
+                        self._newasteroids = False
+                        self._newAscore += 6
+
+                    
+                       
+                        
+                       
+                        
             
             manager.update(fpscap)
             manager.draw_ui(screen)

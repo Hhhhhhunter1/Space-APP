@@ -41,45 +41,9 @@ class Game_object():
         if self._health <= 0:
             return True
     
-class ship(Game_object):
-    
-    def __init__(self, x, y, health):
-        super().__init__(x, y, health)
-        self._bullets = []
-        self._bullet_speed = 7
-        self._cooldown = 5
-      
-        
-    def shoot(self, keys):
-        mousex, mousey = pygame.mouse.get_pos()
-        ptoxVector, ptoyVector = mousex - self._x, mousey - self._y
-        angle = math.atan2(ptoyVector, ptoxVector)
-        if keys[pygame.K_SPACE]:
-            if self._cooldown <= 0:
-                offset = 14
-                bullet_x = self._x + math.cos(angle) * offset
-                bullet_y = self._y + math.sin(angle) * offset
-                bullet = {'pos': [bullet_x, bullet_y], 'angle': angle}
-                self._bullets.append(bullet)
-                self._cooldown = 15
-        if self._cooldown > 0:
-            self._cooldown -= 1
-
-    def draw_bullets(self):
-        for bullet in self._bullets[:]:
-            bullet['pos'][0] += math.cos(bullet['angle']) * self._bullet_speed
-            bullet['pos'][1] += math.sin(bullet['angle']) * self._bullet_speed
-    
-            if (bullet['pos'][0] < 0 or bullet['pos'][0] > 1920 or
-                bullet['pos'][1] < 0 or bullet['pos'][1] > 1080):
-                self._bullets.remove(bullet)
-            else:
-                pygame.draw.circle(screen, (255, 255, 255), (int(bullet['pos'][0]), int(bullet['pos'][1])), 5)
-
-       
    
         
-class player(ship):
+class player(Game_object):
     def __init__(self, x, y, health):
         super().__init__(x, y, health)
         self._width  = 17
@@ -89,6 +53,9 @@ class player(ship):
         self._rotatedplayersprite = self._playersprite
         self._rect = self._playersprite.get_rect(center=(self._x, self._y))
         self._last_time = time.perf_counter()
+        self._bullets = []
+        self._bullet_speed = 7
+        self._cooldown = 5
         
     def draw(self):
         screen.blit(self._rotatedplayersprite, self._rect)
@@ -124,7 +91,33 @@ class player(ship):
         self._x, self._y = self.lerp_velocity()
         self._rect.center = (int(self._x), int(self._y))
 
-class enemy(ship):
+    def shoot(self, keys):
+        mousex, mousey = pygame.mouse.get_pos()
+        ptoxVector, ptoyVector = mousex - self._x, mousey - self._y
+        angle = math.atan2(ptoyVector, ptoxVector)
+        if keys[pygame.K_SPACE]:
+            if self._cooldown <= 0:
+                offset = 14
+                bullet_x = self._x + math.cos(angle) * offset
+                bullet_y = self._y + math.sin(angle) * offset
+                bullet = {'pos': [bullet_x, bullet_y], 'angle': angle}
+                self._bullets.append(bullet)
+                self._cooldown = 15
+        if self._cooldown > 0:
+            self._cooldown -= 1
+
+    def draw_bullets(self):
+        for bullet in self._bullets[:]:
+            bullet['pos'][0] += math.cos(bullet['angle']) * self._bullet_speed
+            bullet['pos'][1] += math.sin(bullet['angle']) * self._bullet_speed
+    
+            if (bullet['pos'][0] < 0 or bullet['pos'][0] > 1920 or
+                bullet['pos'][1] < 0 or bullet['pos'][1] > 1080):
+                self._bullets.remove(bullet)
+            else:
+                pygame.draw.circle(screen, (255, 255, 255), (int(bullet['pos'][0]), int(bullet['pos'][1])), 5)
+
+class enemy(Game_object):
     def __init__(self, x, y, health):
         super().__init__(x, y, health)
         self._width = 30
@@ -136,7 +129,7 @@ class enemy(ship):
         self._speed = random.randint(1, 3)
 
     
-    def chase(self, target: ship):
+    def chase(self, target: player):
         tx, ty = target.get_position()
         
         distancex = tx - self._x

@@ -2,8 +2,36 @@ import pygame
 import sys
 import random
 import pygame_gui
+import json
+import os
 from game_objects import player, enemy, asteroid, screen, manager, fpscap, clock
 
+# highscore saving, loading and adding
+
+highscores = "highsores.json"
+
+def loadhighscores():
+    if os.path.exists(highscores):
+        with open(highscores, "r") as f:
+            return json.load(f)
+    else:
+        return { "Normal": 0, "Ships": 0, "Asteroids": 0}
+    
+def savehighscores(highscore):
+    with open(highscores, "w") as f:
+        json.dump(highscore, f, indent=1)
+
+def updatehighscores(score, mode):
+    highscore = loadhighscores()
+
+    if mode not in highscore:
+        return
+    
+    if score > highscore[mode]:
+        highscore[mode] = score
+        savehighscores(highscore)
+        return True
+    return False
 
 # allows main menu to be brought up in game
 
@@ -36,7 +64,7 @@ def main_menu():
        
         playerdetails = font.render("This is your ship. It follows your cursor and fires it's guns \nwhen you press the space button.", True, (255, 255, 255))
         enemydetails = font.render("This is an enemy ship, shoot it before it flies into you. \nThat will reward with you three points.", True, (255, 255, 255))
-        asteroiddetails = font.render("This is an asteroid, they can be destroyed with three shots \nand give you five points when they are destroyed. \nTry not to fly into them.", True, (255, 255, 255))
+        asteroiddetails = font.render("This is an asteroid, they can be destroyed with three shots \nand give you three points when they are destroyed. \nTry not to fly into them.", True, (255, 255, 255))
        
         
         Normal_mode_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 450), (400, 60)), text='Normal', manager=manager))
@@ -47,7 +75,9 @@ def main_menu():
         Exit_game_button = (pygame_gui.elements.UIButton(relative_rect=pygame.Rect((760, 850), (400, 60)), text='Quit game', manager=manager))
         
         all_menu_buttons = [ Normal_mode_button, Ships_mode_button, Asteroids_mode_button, Tutorial_button, Exit_game_button]
-        
+        global mode
+        global highscoreig
+
         screenrunning = True
         intutorial = False
         while screenrunning:
@@ -66,20 +96,28 @@ def main_menu():
 
                         if event.ui_element == Normal_mode_button:
                             screenrunning = False
+                            mode = "Normal"
+                            highscoreig = loadhighscores()[mode]
                             hide_menu_buttons()            
                             normal = setter(2, 4)
                             normal.rungame()
                             
                         elif event.ui_element == Ships_mode_button:
                             screenrunning = False
+                            mode = "Ships"
+                            highscoreig = loadhighscores()[mode]
                             hide_menu_buttons()   
                             ships = setter(4, 0)
                             ships.rungame()
+
                         elif event.ui_element == Asteroids_mode_button:
-                            screenrunning = False  
+                            screenrunning = False
+                            mode = "Asteroids"  
+                            highscoreig = loadhighscores()[mode]
                             hide_menu_buttons()
                             asteroids = setter(0, 16)
                             asteroids.rungame()
+
                         elif event.ui_element == Tutorial_button and not intutorial:
                             hide_menu_buttons()
                             manager.clear_and_reset() 
@@ -122,6 +160,7 @@ def main_menu():
 
 class setter():
     def __init__(self, a, b): 
+        self._highscore = loadhighscores()[mode]
         self._score = 0
         self._timecounter = 0
         self._score_timer = 0
@@ -196,6 +235,7 @@ class setter():
     
     def rungame(self):
     
+        
         running = True
         while running:
         
@@ -212,8 +252,7 @@ class setter():
                
                 # pause screen buttons
                 
-                if event.type == pygame.USEREVENT: 
-                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED: 
                         if event.ui_element == self._resume_button:       
                             self._paused = False
                         elif event.ui_element == self._backtomenu_button:
@@ -265,7 +304,6 @@ class setter():
                         if a.die() == True:
                             self._currentasteroids.remove(a) 
                             self._score += 3
-                            
                             break
 
             for b in bulletstoremove:
@@ -299,7 +337,10 @@ class setter():
         
             screen.blit(self._gamewallpaper, (0,0))
 
-            if pdead == True:
+            if pdead:
+                 change = updatehighscores(self._score, mode)
+                 if change:
+                     self._highscore = loadhighscores()[mode]
                  gameover = True
                  screen.blit(self._deadgamewallpaper, (0,0))
                  self._backtomenu_button.show()
@@ -310,12 +351,15 @@ class setter():
                 pause = self._font.render("Game Paused", True, (255, 255, 255))
                 screen.blit(pause, (830, 200))
                  
+            
+            display_highscore = self._font.render(f"Highscore: {self._highscore}", True, (255, 255, 255)) 
+            screen.blit(display_highscore, (1400, 20))
+            
             display_score = self._font.render(f"Score: { self._score}", True, (255, 255, 255))
             screen.blit(display_score, (1700, 20))
         
             #setting up game
-            if not gameover:
-                if not self._paused: 
+            if not gameover and not self._paused: 
 
                     self._score_timer += fpscap
 

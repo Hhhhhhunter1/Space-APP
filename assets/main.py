@@ -76,7 +76,6 @@ def main_menu():
         
         all_menu_buttons = [ Normal_mode_button, Ships_mode_button, Asteroids_mode_button, Tutorial_button, Exit_game_button]
         global mode
-        global highscoreig
 
         screenrunning = True
         intutorial = False
@@ -97,7 +96,7 @@ def main_menu():
                         if event.ui_element == Normal_mode_button:
                             screenrunning = False
                             mode = "Normal"
-                            highscoreig = loadhighscores()[mode]
+                            
                             hide_menu_buttons()            
                             normal = setter(2, 4)
                             normal.rungame()
@@ -105,7 +104,7 @@ def main_menu():
                         elif event.ui_element == Ships_mode_button:
                             screenrunning = False
                             mode = "Ships"
-                            highscoreig = loadhighscores()[mode]
+                            
                             hide_menu_buttons()   
                             ships = setter(4, 0)
                             ships.rungame()
@@ -113,7 +112,7 @@ def main_menu():
                         elif event.ui_element == Asteroids_mode_button:
                             screenrunning = False
                             mode = "Asteroids"  
-                            highscoreig = loadhighscores()[mode]
+                            
                             hide_menu_buttons()
                             asteroids = setter(0, 16)
                             asteroids.rungame()
